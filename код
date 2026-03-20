@@ -1,0 +1,153 @@
+#include <iostream>      // Подключаем ввод/вывод
+using namespace std;     // Чтобы писать cout, endl без std::
+
+class apartament {       // Объявляем класс квартира
+private:                 // Закрытые  поля 
+    int    people;              // Количество жильцов
+    int    numberapartament;    // Номер квартиры
+    double area;                // Площадь квартиры 
+    double money;               // Долг по квартире 
+
+public:                  // Открытые  методы
+    apartament();        // Конструктор по умолчанию
+
+    apartament(int ludi, int chislo , double sq, double dolg); // Конструктор с параметрами
+
+    ~apartament();       // Деструктор
+
+    int    getPeople()  const { return people; }            // Геттер: вернуть количество жильцов
+    int    getNumber()  const { return numberapartament; }  // Геттер: вернуть номер квартиры
+    double getArea()    const { return area; }              // Геттер: вернуть площадь
+    double getMoney()   const { return money; }             // Геттер: вернуть долг
+
+    // Сеттеры с проверкой
+    bool setPeople(int ludi);        // people >= 0            
+    bool setNumber(int chislo);      // Номер квартиры от 1 до 999
+    bool setArea(double sq);         // Площадь > 0
+    bool setMoney(double dolg);      // Долг >= 0
+
+    void printInfo() const;          // Вывод информации о квартире
+    bool hasdolg() const;            // Проверяем есть ли долг
+
+    // Методы по варианту (начисление и оплата)
+    void accrueMonthlyPayment(double tariffPerSq);  // Начислить оплату за месяц
+    void makePayment(double amount);                // Внести платёж
+};
+
+// Конструктор по умолчанию
+apartament::apartament() {
+    people           = 0;     // Жильцов пока 0
+    numberapartament = 0;     // Номер 0
+    area             = 0.0;   // Площадь 0
+    money            = 0.0;   // Долга нет
+}
+
+// Конструктор с параметрами
+apartament::apartament(int ludi, int chislo , double sq, double dolg) {
+    if (!setPeople(ludi))         people = 0;          // Используем сеттеры если данные некорректны ставятся значения по умолчанию
+    if (!setNumber(chislo))       numberapartament = 0;
+    if (!setArea(sq))             area = 0.0;
+    if (!setMoney(dolg))          money = 0.0;
+}
+
+// Деструктор 
+apartament::~apartament() {
+    
+    // cout << "Объект apartament №" << numberapartament << " уничтожен\n";
+}
+
+bool apartament::setPeople(int ludi) {        // Кол жильцов  не отрицательное
+    if (ludi >= 0) {
+        people = ludi;
+        return true;
+    }
+    return false;
+}
+
+bool apartament::setNumber(int chislo) {       // Номер квартиры  например  от 1 до 999 но можно поменять чтобы от 1 до какого хотим
+    if (chislo >= 1 && chislo <= 999) {
+        numberapartament = chislo;
+        return true;
+    }
+    return false;
+}
+
+bool apartament::setArea(double sq) {            // Площадь       > 0
+    if (sq > 0.0) {
+        area = sq;
+        return true;
+    }
+    return false;
+}
+
+bool apartament::setMoney(double dolg) {             // Долг не может быть отрицательным
+    if (dolg >= 0.0) {
+        money = dolg;
+        return true;
+    }
+    return false;
+}
+
+void apartament::printInfo() const {              // Вывод информации о квартире
+    cout << "Кв " << numberapartament
+         << " жильцов: " << people
+         << " площадь: " << area << " м^2"
+         << " долг: " << money << " руб" << endl;
+}
+
+
+bool apartament::hasdolg() const {            // Метод возвращает true или false  есть ли долг
+    return money > 0.0;   // true если долг больше 0
+}
+
+// Начисление оплаты за месяц
+void apartament::accrueMonthlyPayment(double tariffPerSq) {
+    // Тариф не должен быть отрицательным
+    if (tariffPerSq < 0.0) {
+        cout << "Ошибка: тариф не может быть отрицательным" << endl;
+        return;
+    }
+    money += area * tariffPerSq;
+}
+
+// Внесение платежа: уменьшить долг на amount, но не ниже 0
+void apartament::makePayment(double amount) {
+    if (amount <= 0.0) {
+        cout << "Ошибка: сумма платежа должна быть положительной" << endl;
+        return;
+    }
+    if (amount >= money) {
+        money = 0.0;              // Погасили долг полностью
+    } else {
+        money -= amount;          // Частичное погашение
+    }
+}
+
+int main() {
+    apartament a1;                          // Квартира по умолчанию
+
+    apartament a2(3, 46, 89.7, 13767);      // Квартира с параметрами
+
+    cout << "Первая квартира:" << endl;
+    a1.printInfo();
+
+    cout << "Вторая квартира (до начисления и платежа):" << endl;
+    a2.printInfo();
+    
+    a2.accrueMonthlyPayment(50.0);          // Начисляем оплату за месяц, например 50 руб/кв.м
+
+    cout << "После начисления оплаты за месяц:" << endl;
+    a2.printInfo();
+
+    a2.makePayment(5000.0);                 // Вносим платеж, например 5000 руб
+
+    cout << "\nПосле внесения платежа 5000 руб:" << endl;
+    a2.printInfo();
+
+    if (a2.hasdolg()) {                     // Проверка долга
+        cout << "Долг по второй квартире еще остался." << endl;
+    } else {
+        cout << "Долг по второй квартире погашен." << endl;
+    }
+    return 0;
+}
